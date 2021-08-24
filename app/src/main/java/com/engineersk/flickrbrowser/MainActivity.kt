@@ -1,8 +1,11 @@
 package com.engineersk.flickrbrowser
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,22 +15,28 @@ import com.engineersk.flickrbrowser.models.Photo
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete,
-    GetFlickrJSONData.OnDataAvailable {
+class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
+    GetFlickrJSONData.OnDataAvailable, RecyclerItemClickListener.OnRecyclerClickListener {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var toolbar: Toolbar
 
-    private val flickrImageRecyclerViewAdapter:FlickrImageRecyclerViewAdapter = FlickrImageRecyclerViewAdapter(ArrayList())
+    private val flickrImageRecyclerViewAdapter: FlickrImageRecyclerViewAdapter =
+        FlickrImageRecyclerViewAdapter(ArrayList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate: called...")
         setContentView(R.layout.activity_main)
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        activateToolbar(false)
+
         recyclerView = findViewById(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.addOnItemTouchListener(
+            RecyclerItemClickListener(
+                this, recyclerView,
+                this
+            )
+        )
         recyclerView.adapter = flickrImageRecyclerViewAdapter
 
         val getRawData = GetRawData(this)
@@ -36,7 +45,7 @@ class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete,
             .buildUpon()
             .appendQueryParameter("tagname", "oreo,android")
             .appendQueryParameter("tagmode", "ALL")
-            .appendQueryParameter("lang","en-us")
+            .appendQueryParameter("lang", "en-us")
             .appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .build().toString()
@@ -63,6 +72,26 @@ class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete,
 
     override fun onError(exception: Exception) {
         Log.e(TAG, "onError: ${exception.message}")
+    }
+
+    override fun onItemClick(view: View, position: Int) {
+        Log.d(TAG, "onItemClick: starts")
+        Toast.makeText(
+            this, "Normal tap at position $position",
+            Toast.LENGTH_SHORT
+        ).show()
+
+    }
+
+    override fun onItemLongClick(view: View, position: Int) {
+        Log.d(TAG, "onItemLongClick: starts")
+//        Toast.makeText(this, "Long tap at position $position", Toast.LENGTH_SHORT).show()
+        val photo: Photo? = flickrImageRecyclerViewAdapter.getPhoto(position)
+        if (photo != null) {
+            val intent = Intent(this, PhotoDetailsActivity::class.java)
+            intent.putExtra(PHOTO_TRANSFER, photo)
+            startActivity(intent)
+        }
     }
 
 

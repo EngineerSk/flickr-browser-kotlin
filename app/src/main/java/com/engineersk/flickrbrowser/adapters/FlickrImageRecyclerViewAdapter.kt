@@ -88,7 +88,7 @@ class FlickrImageRecyclerViewAdapter(private var photoList: ArrayList<Photo>) :
      * @return The total number of items in this adapter.
      */
     override fun getItemCount(): Int {
-        Log.d(TAG, "getItemCount: called...")
+//        Log.d(TAG, "getItemCount: called...")
         return if (photoList.isNotEmpty()) photoList.size else 0
     }
 
