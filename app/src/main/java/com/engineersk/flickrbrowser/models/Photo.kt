@@ -1,46 +1,49 @@
 package com.engineersk.flickrbrowser.models
 
-import android.util.Log
-import java.io.*
-import kotlin.jvm.Throws
+import android.os.Parcel
+import android.os.Parcelable
 
 private const val TAG = "Photo"
 
 class Photo(
-    var title: String, var author: String, private var authorId: String,
-    var link: String, var tags: String, var image: String) : Serializable {
+    var title: String?, var author: String?, private var authorId: String?,
+    var link: String?, var tags: String?, var image: String?) : Parcelable {
 
-    companion object{
-        private const val serialVersionUID = 1L
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString()
+    ) {
     }
+
     override fun toString(): String {
         return "Photo(title=$title, author=$author, authorId=$authorId, link=$link, tags=$tags, image=$image)"
     }
 
-    @Throws(IOException::class)
-    private fun writeObject(outputStream: ObjectOutputStream){
-        Log.d(TAG, "writeObject: called")
-        outputStream.writeUTF(title)
-        outputStream.writeUTF(author)
-        outputStream.writeUTF(authorId)
-        outputStream.writeUTF(link)
-        outputStream.writeUTF(tags)
-        outputStream.writeUTF(image)
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(title)
+        parcel.writeString(author)
+        parcel.writeString(authorId)
+        parcel.writeString(link)
+        parcel.writeString(tags)
+        parcel.writeString(image)
     }
 
-    @Throws(IOException::class, ClassNotFoundException::class)
-    private fun readObject(inputStream: ObjectInputStream){
-        title = inputStream.readUTF()
-        author = inputStream.readUTF()
-        authorId = inputStream.readUTF()
-        link = inputStream.readUTF()
-        tags = inputStream.readUTF()
-        image = inputStream.readUTF()
+    override fun describeContents(): Int {
+        return 0
     }
 
-    @Throws(ObjectStreamException::class)
-    private fun readObjectNoData(){
-        Log.d(TAG, "readObjectNoData: called...")
+    companion object CREATOR : Parcelable.Creator<Photo> {
+        override fun createFromParcel(parcel: Parcel): Photo {
+            return Photo(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Photo?> {
+            return arrayOfNulls(size)
+        }
     }
 
 }
