@@ -1,13 +1,17 @@
 package com.engineersk.flickrbrowser
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.preference.Preference
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.engineersk.flickrbrowser.adapters.FlickrImageRecyclerViewAdapter
@@ -38,18 +42,6 @@ class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
             )
         )
         recyclerView.adapter = flickrImageRecyclerViewAdapter
-
-        val getRawData = GetRawData(this)
-
-        val url = Uri.parse("https://www.flickr.com/services/feeds/photos_public.gne")
-            .buildUpon()
-            .appendQueryParameter("tagname", "oreo,android")
-            .appendQueryParameter("tagmode", "ALL")
-            .appendQueryParameter("lang", "en-us")
-            .appendQueryParameter("format", "json")
-            .appendQueryParameter("nojsoncallback", "1")
-            .build().toString()
-        getRawData.execute(url)
     }
 
     override fun downloadComplete(data: String, status: DownloadStatus) {
@@ -94,6 +86,40 @@ class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_search -> {
+                startActivity(Intent(this@MainActivity, SearchActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onResume() {
+        Log.d(TAG, "onResume: starts...")
+        super.onResume()
+        val preference = getSharedPreferences(SHARED_PREF_KEY, Context.MODE_PRIVATE)
+        val queryResult: String = preference.getString(FLICKR_QUERY, "")!!
+        Log.d(TAG, "onResume: $queryResult")
+        if (queryResult.isNotEmpty()) {
+            val getRawData = GetRawData(this)
+            val url = Uri.parse("https://www.flickr.com/services/feeds/photos_public.gne")
+                .buildUpon()
+                .appendQueryParameter("tags", queryResult)
+                .appendQueryParameter("tagmode", "ANY")
+                .appendQueryParameter("lang", "en-us")
+                .appendQueryParameter("format", "json")
+                .appendQueryParameter("nojsoncallback", "1")
+                .build().toString()
+            getRawData.execute(url)
+        }
+    }
 
 //    companion object{
 //        private const val TAG = "MainActivity"
