@@ -72,6 +72,11 @@ class FlickrImageRecyclerViewAdapter(private var photoList: ArrayList<Photo>) :
      * @param position The position of the item within the adapter's data set.
      */
     override fun onBindViewHolder(holder: FlickrImageViewHolder, position: Int) {
+        if(photoList.isEmpty()){
+            holder.mThumbnail.setImageResource(R.drawable.ic_image_24)
+            holder.mTitle.text = holder.mTitle.context.getString(R.string.empty_photos)
+            return
+        }
         val photoItem = photoList[position]
         Log.d(TAG, "onBindViewHolder: ${photoItem.title}-->$position")
 
@@ -89,7 +94,7 @@ class FlickrImageRecyclerViewAdapter(private var photoList: ArrayList<Photo>) :
      */
     override fun getItemCount(): Int {
 //        Log.d(TAG, "getItemCount: called...")
-        return if (photoList.isNotEmpty()) photoList.size else 0
+        return if (photoList.isNotEmpty()) photoList.size else 1
     }
 
     fun loadNewData(newPhotos: ArrayList<Photo>) {
